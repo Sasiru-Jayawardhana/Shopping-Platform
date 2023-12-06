@@ -4,8 +4,26 @@ public class WestminsterShoppingManager implements ShoppingManager{
     private List <Product> productList;
     private ShoppingCart shoppingCart;
 
-    public WestminsterShoppingManager (List <Product> productList){
-        this.productList = productList;
-        this.shoppingCart= new ShoppingCart();
+
+    @Override
+    public void addProduct() {
+
     }
+
+    @Override
+    public void removeProduct() {
+
+    }
+
+    @Override
+    public void printProduct() {
+
+    }
+
+    @Override
+    public void menu() {
+
+    }
+
+    public
 }
