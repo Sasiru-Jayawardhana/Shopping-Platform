@@ -24,6 +24,4 @@ public class WestminsterShoppingManager implements ShoppingManager{
     public void menu() {
 
     }
-
-    public
 }
