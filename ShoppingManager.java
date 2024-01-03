@@ -1,8 +1,10 @@
 public interface ShoppingManager {
 
-    public abstract void addProduct();
+    public abstract void addProductToSystem();
 
-    public abstract void removeProduct();
-    public abstract void printProduct();
-    public abstract void menu();
+    void removeProductFromSystem();
+
+    public abstract void printProductListInSystem();
+    public abstract void saveToFile();
 }
+
