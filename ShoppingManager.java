@@ -1,10 +1,11 @@
+// Interface for managing shopping-related operations in a system
 public interface ShoppingManager {
 
-    public abstract void addProductToSystem();
+    void addProductToSystem(); // Method to add a product to the system
 
-    void removeProductFromSystem();
+    void removeProductFromSystem();// Method to remove a product from the system
 
-    public abstract void printProductListInSystem();
-    public abstract void saveToFile();
+    void printProductListInSystem();// Method to print the list of products in the system
+    void saveToFile(); // Method to save the system data to a file
 }
 

@@ -1,25 +1,26 @@
 import  java.io.*;
 import java.util.InputMismatchException;
-//import java.io.BufferedWriter;
-//import java.io.BufferedReader;
-//import java.io.FileWriter;
-//import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
 public class WestminsterShoppingManager implements ShoppingManager{
+    private static final String userDataFilePath = "ManagerData.txt";
+    private List<User> userList;
     private List<Product> productList;
+    private ArrayList<String> IdList;
 
-    public WestminsterShoppingManager() {
+    public WestminsterShoppingManager() { // Constructor initializes lists and loads user data from a file
 
         this.productList = new ArrayList<>();
+        this.IdList = new ArrayList<>();
+        this.userList = loadUserData();
+
     }
 
     @Override
-    public void addProductToSystem() {
-        System.out.println(productList);
+    public void addProductToSystem() { // Method to add a product to the system
         Scanner input =new Scanner(System.in);
         int option;
         if (productList.size()<50){  //cant be equal to 50 because there have to be one space left to add
@@ -41,28 +42,6 @@ public class WestminsterShoppingManager implements ShoppingManager{
             }else {
                 addClothingProducts(input);
             }
-//                delete below code-----------------------------------
-            System.out.println("Products in the list:");
-            System.out.println(productList);
-            for (Product product : productList) {
-                System.out.println("Product Type: " + product.getProductType());
-                System.out.println("Product ID: " + product.getProductId());
-                System.out.println("Product Name: " + product.getProductName());
-                System.out.println("Available Items: " + product.getNoOfAvailableItems());
-                System.out.println("Price: " + product.getPrice());
-
-                if (product instanceof Electronics) {
-                    System.out.println("Brand: " + ((Electronics) product).getBrand());
-                    System.out.println("Warranty Period: " + ((Electronics) product).getWarrantyPeriod() + " months\n");
-
-                } else if (product instanceof Clothing) {
-                    System.out.println("Size: " + ((Clothing) product).getSize());
-                    System.out.println("Color: " + ((Clothing) product).getColour() +"\n" );
-                }
-
-                System.out.println();
-            }
-//                -----------------------------------------------------
         }else {
             System.out.println("No space to add products");
         }
@@ -79,9 +58,7 @@ public class WestminsterShoppingManager implements ShoppingManager{
         String productName;
 
         System.out.println("------Add Clothing Products ------");
-
-        System.out.print("Enter Product ID: ");
-        productID= input.next();
+        productID = IdValidation(input); //checing if the product ID is already in use
 
         System.out.print("Enter Product Name: ");
         productName= input.next();
@@ -138,8 +115,8 @@ public class WestminsterShoppingManager implements ShoppingManager{
         int noOfAvailableProducts;
         System.out.println("------ Add Electronic products--------");
 
-        System.out.print("Enter Product ID: ");
-        productID= input.next();
+        //product Id validation
+        productID = IdValidation(input); //checing if the product ID is already in use
 
         System.out.print("Enter Product Name: ");
         productName= input.next();
@@ -208,34 +185,6 @@ public class WestminsterShoppingManager implements ShoppingManager{
             System.out.println("Product Not Found! Check if the Product ID is Correct or not.");
         }
 
-//        delete---------------------------------
-
-        for (Product product : productList) {
-            System.out.println(product);
-        }
-//        -------------------------------------
-
-
-//        Scanner input =new Scanner(System.in);
-//        System.out.println( "Enter the Product ID : ");
-//        String productIdToRemove= input.next();
-//        if (productList != null) {
-//            while (true){
-//                if (productList.contains(productIdToRemove)){
-//                    int positionOfProductID = productList.indexOf(productIdToRemove);
-//                    productList.remove(productIdToRemove);
-//                    for (int i = 0; i < 5; i++) {
-//                        productList.remove(positionOfProductID + 1);
-//                    }
-//                    System.out.println("Product removed Successfully");
-//                    break;
-//                }else {
-//                    System.out.println("Product Not Found! Check if the Product ID is Correct or not. ");
-//                }
-//            }
-//        } else {
-//            System.out.println("There is no products to delete.");
-//        }
     }
 
     @Override
@@ -270,6 +219,7 @@ public class WestminsterShoppingManager implements ShoppingManager{
                 writer.write(product.toString());
                 writer.newLine();
             }
+            saveProductIdsToFile(IdList);
             System.out.println("Product list saved to file saveData.txt Successfully.");
 
 
@@ -285,73 +235,40 @@ public class WestminsterShoppingManager implements ShoppingManager{
         try (BufferedReader reader = new BufferedReader(new FileReader("saveData.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // Assuming toString() method in Product class returns a formatted string
-                 updateProductListFromFile(line);
-                System.out.println(productList);
-
-//                Product product = determineProductType(line);
-//                if (product != null){
-//                    productList.add(product);
-//                }
-//                System.out.println("i am in product");
-//                System.out.println(productList);
-//                for (int i = 0; i < productList.size(); i++) {
-//                    System.out.println(i);
-//                    System.out.println(productList.get(i));
-//
-//                }
+                // toString() method in Product class returns a formatted string
+                updateProductListFromFile(line);
             }
             System.out.println("Product list loaded from file successfully");
         } catch (FileNotFoundException e){
             System.out.println("saveData.txt File Not Found");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("error" + e.getMessage());
         }
     }
 
-    private void updateProductListFromFile(String line) {
+    private void updateProductListFromFile(String line)
+    {
         try {
-            System.out.println("Line: " + line);
             String[] parts = line.split(",\\s*");
-            System.out.println("Parts length: " + parts.length);
-
-
             if (parts.length < 6) {
                 System.out.println("Invalid product format: " + line);
                 return;
             }
 
             String productIdFromFile = parts[0];
-            System.out.println(parts[0]);
             String productNameFromFile = parts[1];
-            System.out.println(parts[1]);
-
             int availableItemsFromFile = Integer.parseInt(parts[2]);
-            System.out.println(parts[2]);
-
             double priceFromFile  = Double.parseDouble(parts[3]);
-            System.out.println(parts[3]);
-
             //determine the product type according to the data type  in the 5th place
             if (parts[4].matches("\\d*\\.?\\d+")){   //if the 5th place is a double it is a Clothing product (size)
-                System.out.println("i am in clothing");
-
                 double sizeFromFile = Double.parseDouble(parts[4]);
-                System.out.println(sizeFromFile);
-
                 String colorFromFile = parts[5];
-                System.out.println(colorFromFile);
-
                 Clothing clothing=new Clothing(productIdFromFile, productNameFromFile, availableItemsFromFile, priceFromFile, sizeFromFile, colorFromFile);
                 productList.add(clothing);
 
             }else {
-                System.out.println("i am in elect");
                 String brandFromFile = parts[4];
-                System.out.println(brandFromFile);
-
                 int warrantyFormFile = Integer.parseInt(parts[5]);
-                System.out.println(warrantyFormFile);
                 Electronics electronics=new Electronics(productIdFromFile, productNameFromFile, availableItemsFromFile, priceFromFile, brandFromFile, warrantyFormFile);
                 productList.add(electronics);
             }
@@ -361,4 +278,95 @@ public class WestminsterShoppingManager implements ShoppingManager{
 
     }
 
+    public static void saveProductIdsToFile(ArrayList<String> productIds) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("ExistingIdList.txt"))) {
+            for (String productId : productIds) {
+                writer.write(productId);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error" + e.getMessage());
+        }
+    }
+
+    // Method to load Product IDs from a text file and add them to the Product ID arraylist
+    public void loadProductIdsFromFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("ExistingIdList.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                IdList.add(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Error" + e.getMessage());
+        }
+    }
+
+    private String IdValidation(Scanner input) {
+        String productID;
+        while (true) {
+            System.out.print("Enter a product ID: ");
+            productID= input.next();
+            // Check if the entered ID already exists
+            if (IdList.contains(productID)) {
+                System.out.println("Error: The entered Product ID already exists. Please try again.");
+            } else {
+                // Add the valid ID to the list and break the loop
+                IdList.add(productID);
+                break;
+            }
+        }
+        return productID;
+    }
+
+    public Boolean runManagerLoginSystem() { //System manager login system.
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Welcome to User Login System");
+
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        if (isValidUser(username, password)) {
+            System.out.println("Login successful! Welcome, " + username + "!");
+            return true;
+        } else {
+            System.out.println("Invalid username or password. Please try again.");
+            return false;
+        }
+
+
+    }
+    private boolean isValidUser(String username, String password) {
+        for (User user : userList) {
+            if (user.getUserName().equals(username) && user.getPassword().equals(password)) { //checks if user has a account in shopping platform
+                return true;
+            }
+        }
+        return false;
+    }
+    public List<User> loadUserData() { //system manager information loading method
+        List<User> userList = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(userDataFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] userData = line.split(",\\s*");
+                if (userData.length == 2) {
+                    String username = userData[0];
+                    String password = userData[1];
+                    userList.add(new User(username, password));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading user data file.");
+        }
+
+        return userList;
+    }
+
+    public List<Product> getProductList() {
+        return productList;
+    }
 }
