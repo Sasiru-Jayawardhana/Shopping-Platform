@@ -1,0 +1,3 @@
+newuser:123:false
+sasiru:987:false
+nimal:698:false
